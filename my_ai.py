@@ -10,7 +10,7 @@ st.markdown("---")
 
 # 2. Xiriirka Google AI (API Connection)
 # Hubi in API Key-gani uu yahay kii aad hore u isticmaali jirtay
-GOOGLE_API_KEY = "AIzaSyBen9s5h50soiKHp9AmqxkCN13kBbWFvh4"
+GOOGLE_API_KEY = "AIzaSyDyACY4Q1DHXN2Vjb1j8318KIOhXxIi2zc"
 client = genai.Client(api_key=GOOGLE_API_KEY)
 
 # 3. Sidebar (Features-ka AI-ga)
@@ -52,4 +52,5 @@ if prompt := st.chat_input("Maxaan ku caawiyaa?"):
                 st.markdown(response.text)
                 st.session_state.messages.append({"role": "assistant", "content": response.text})
             except Exception as e:
+
                 st.error(f"Cilad ayaa dhacday: {e}")
