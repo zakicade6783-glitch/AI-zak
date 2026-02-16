@@ -43,14 +43,15 @@ if prompt := st.chat_input("Maxaan ku caawiyaa?"):
     with st.chat_message("assistant"):
         with st.spinner("AI-ga ayaa jawaab diyaarinaya..."):
             try:
-              # Halkani waa halkii error-ka laga bixiyay
-                response = client.models.generate_content(
-                    model="gemini-2.0-flash", 
-                    contents=f"You are a {ai_mode}. Respond to this: {prompt}"
-                )
-                
+             # Halkii aad prompt kaliya u diri lahayd, ku dar xogtaada
+xogta_zakarie = "Zakarie waa aqoonyahan barta computer-ka. Website-kan isagaa leh..."
+response = client.models.generate_content(
+    model="gemini-2.0-flash", 
+    contents=f"Xogtaada: {xogta_zakarie}. Su'aasha: {prompt}"
+)
                 st.markdown(response.text)
                 st.session_state.messages.append({"role": "assistant", "content": response.text})
             except Exception as e:
 
                 st.error(f"Cilad ayaa dhacday: {e}")
+
