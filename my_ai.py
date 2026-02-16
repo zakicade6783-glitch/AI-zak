@@ -1,27 +1,32 @@
 import streamlit as st
 from google import genai
+from pypdf import PdfReader
 
-# 1. Habaynta Bilicda Website-ka
-st.set_page_config(page_title="Zaki AI Assistant", page_icon="🌐", layout="centered")
+# 1. Habaynta Website-ka
+st.set_page_config(page_title="Zaki AI Assistant", page_icon="🌐")
+st.title("🌐 Zakarie AI (PDF Trained)")
 
-st.title("🌐 Zakarie AI Web Assistant")
-st.markdown("---")
-
-# 2. Xiriirka Google AI (API Key-gaaga cusub)
+# 2. API Key-gaaga
 GOOGLE_API_KEY = "AIzaSyDyACY4Q1DHXN2Vjb1j8318KIOhXxIi2zc"
 client = genai.Client(api_key=GOOGLE_API_KEY)
 
-# 3. Sidebar
-with st.sidebar:
-    st.header("Settings")
-    ai_mode = st.selectbox("Dooro Shaqada AI-ga:", 
-                           ["Kaaliye Guud", "Turjubaan Soomaali", "Code Helper"])
-    st.markdown("---")
-    if st.button("Tirtir Sheekada"):
-        st.session_state.messages = []
-    st.info("App-kan waxaa iska leh Zakarie.")
+# 3. Shaqada akhrinta PDF-ka
+def load_pdf_data(file_path):
+    try:
+        reader = PdfReader(file_path)
+        text = ""
+        for page in reader.pages:
+            content = page.extract_text()
+            if content:
+                text += content
+        return text
+    except Exception as e:
+        return f"Ma jiro xog PDF ah oo la helay. Cilad: {e}"
 
-# 4. Xusuusta Sheekada
+# Soo saar xogta PDF-ka
+training_context = load_pdf_data("data.pdf")
+
+# 4. Chat Interface
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
@@ -29,31 +34,23 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# 5. Xogta aad rabto in AI-gu barto (Training Data)
-xogta_zakarie = """
-Magaca ninka iska leh website-kan waa Zakarie. 
-Zakarie waa aqoonyahan barta cilmiga computer-ka. 
-Website-kan waxaa loogu talagalay inuu dadka caawiyo isagoo isticmaalaya Gemini AI.
-"""
-
-# 6. Meesha Su'aasha
-if prompt := st.chat_input("Maxaan ku caawiyaa?"):
+if prompt := st.chat_input("I weydii wax ku saabsan xogta PDF-ka..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        with st.spinner("AI-ga ayaa jawaab diyaarinaya..."):
-            try:
-                # Halkani waa halka tababarka laga siinayo AI-ga
-                full_prompt = f"Xogta rasmiga ah: {xogta_zakarie}. \nSu'aasha isticmaalaha: {prompt}"
-                
-                response = client.models.generate_content(
-                    model="gemini-2.0-flash", 
-                    contents=full_prompt
-                )
-                
-                st.markdown(response.text)
-                st.session_state.messages.append({"role": "assistant", "content": response.text})
-            except Exception as e:
-                st.error(f"Cilad ayaa dhacday: {e}")
+        try:
+            # Halkan AI-ga waxaan ku siinaynaa PDF-ka sidii macluumaad uu ka jawaabo
+            full_prompt = f"Isticmaal xogtan soo socota si aad ugu jawaabto su'aasha: \n\n{training_context}\n\nSu'aasha: {prompt}"
+            
+            response = client.models.generate_content(
+                model="gemini-2.0-flash", 
+                contents=full_prompt
+            )
+            
+            st.markdown(response.text)
+            st.session_state.messages.append({"role": "assistant", "content": response.text})
+        except Exception as e:
+            st.error(f"Cilad ayaa dhacday: {e}")
+
